@@ -1,35 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Job } from '@/features/jobs/types';
-import { useMyJobs } from '@/features/dashboard/useMyJobs';
+import { useJobDetails } from '@/features/jobs/useJobDetails';
 
 export default function JobDetailsPage() {
   const params = useParams();
-  const { getJobById } = useMyJobs();
   const unwrappedParams = params as { jobId: string };
-  const [job, setJob] = useState<Job | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        const job = await getJobById(unwrappedParams.jobId);
-        if (job) {
-          setJob(job);
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch job');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchJob();
-  }, [unwrappedParams.jobId]);
+  const { job, isLoading, error } = useJobDetails(unwrappedParams.jobId);
 
   if (isLoading) {
     return (

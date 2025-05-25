@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import axios from 'axios';
 import { Job, JobFilters } from './types';
+import { useQuery } from '@tanstack/react-query';
 
 interface PaginatedJobsResult {
   data: Job[];
@@ -11,70 +12,62 @@ interface PaginatedJobsResult {
 }
 
 export function useJobs(filters?: JobFilters, initialPage = 1, pageSize = 10) {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    page: initialPage,
-    pageSize,
-    totalPages: 0,
-    totalCount: 0
+  const [page, setPage] = useState(initialPage);
+  
+  const queryKey = ['jobs', 'public', { ...filters, page, pageSize }];
+  
+  const fetchJobs = useCallback(async ({ queryKey }: { queryKey: any[] }) => {
+    const [, , params] = queryKey;
+    let url = '/api/jobs/public';
+    const urlParams = new URLSearchParams();
+    
+    if (params.keyword) {
+      urlParams.append('keyword', params.keyword);
+    }
+    
+    if (params.jobType) {
+      urlParams.append('jobType', params.jobType);
+    }
+    
+    // Add pagination params
+    urlParams.append('page', params.page.toString());
+    urlParams.append('pageSize', params.pageSize.toString());
+    
+    if (urlParams.toString()) {
+      url += `?${urlParams.toString()}`;
+    }
+    
+    const response = await axios.get<PaginatedJobsResult>(url);
+    return response.data;
+  }, []);
+
+  const { 
+    data, 
+    isLoading, 
+    error
+  } = useQuery({
+    queryKey,
+    queryFn: fetchJobs
   });
 
-  const fetchJobs = useCallback(async (page: number = pagination.page) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      let url = '/api/jobs/public';
-      const params = new URLSearchParams();
-      
-      if (filters?.location) {
-        params.append('location', filters.location);
-      }
-      
-      if (filters?.jobType) {
-        params.append('jobType', filters.jobType);
-      }
-      
-      // Add pagination params
-      params.append('page', page.toString());
-      params.append('pageSize', pageSize.toString());
-      
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-      
-      const response = await axios.get<PaginatedJobsResult>(url);
-      setJobs(response.data.data || []);
-      setPagination({
-        page: response.data.page,
-        pageSize: response.data.pageSize,
-        totalPages: response.data.totalPages,
-        totalCount: response.data.totalCount
-      });
-    } catch (err) {
-      setError('Failed to fetch jobs. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters?.location, filters?.jobType, pageSize, pagination.page]);
+  const jobs = data?.data || [];
+  const pagination = {
+    page: data?.page || page,
+    pageSize: data?.pageSize || pageSize,
+    totalPages: data?.totalPages || 0,
+    totalCount: data?.totalCount || 0
+  };
 
-  // Change page
   const changePage = useCallback((newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
-    setPagination(prev => ({ ...prev, page: newPage }));
-    fetchJobs(newPage);
-  }, [fetchJobs, pagination.totalPages]);
-  
-  useEffect(() => {
-    fetchJobs(initialPage);
-  }, [fetchJobs, initialPage]);
+    setPage(newPage);
+    window.scrollTo(0, 0);
+  }, [pagination.totalPages]);
   
   return { 
     jobs, 
     isLoading, 
-    error,
+    error: error ? 'Failed to fetch jobs. Please try again later.' : null,
     pagination,
     changePage
   };
