@@ -8,10 +8,79 @@ import { JobTypes } from '@/domain/enums/JobTypes';
 export default function JobsPage() {
   const [location, setLocation] = useState<string>('');
   const [jobType, setJobType] = useState<JobTypes | null>(null);
-  const { jobs, isLoading, error } = useJobs({ location: location || null, jobType });
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const { jobs, isLoading, error, pagination, changePage } = useJobs(
+    { location: location || null, jobType },
+    currentPage
+  );
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    changePage(page);
+    window.scrollTo(0, 0);
+  };
+
+  // Create pagination buttons
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxButtonsToShow = 5;
+    
+    // Calculate range of buttons to show
+    let startPage = Math.max(1, pagination.page - Math.floor(maxButtonsToShow / 2));
+    let endPage = Math.min(pagination.totalPages, startPage + maxButtonsToShow - 1);
+    
+    // Adjust if we're at the end
+    if (endPage - startPage + 1 < maxButtonsToShow && startPage > 1) {
+      startPage = Math.max(1, endPage - maxButtonsToShow + 1);
+    }
+    
+    // Previous button
+    buttons.push(
+      <button
+        key="prev"
+        onClick={() => handlePageChange(pagination.page - 1)}
+        disabled={pagination.page === 1}
+        className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+    );
+    
+    // Page buttons
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+            i === pagination.page
+              ? 'bg-indigo-600 text-white'
+              : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+    
+    // Next button
+    buttons.push(
+      <button
+        key="next"
+        onClick={() => handlePageChange(pagination.page + 1)}
+        disabled={pagination.page === pagination.totalPages}
+        className="relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+    );
+    
+    return buttons;
   };
 
   return (
@@ -97,37 +166,53 @@ export default function JobsPage() {
               <p className="text-gray-500">No jobs found matching your criteria.</p>
             </div>
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
-                {jobs.map((job) => (
-                  <li key={job.id}>
-                    <div className="px-4 py-4 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-medium text-indigo-600 truncate">{job.title}</h3>
-                        <div className="ml-2 flex-shrink-0 flex">
-                          <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            {job.jobType.replace('_', ' ')}
-                          </p>
+            <>
+              <div className="bg-white shadow overflow-hidden sm:rounded-md">
+                <ul className="divide-y divide-gray-200">
+                  {jobs.map((job) => (
+                    <li key={job.id}>
+                      <div className="px-4 py-4 sm:px-6">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-medium text-indigo-600 truncate">{job.title}</h3>
+                          <div className="ml-2 flex-shrink-0 flex">
+                            <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              {job.jobType.replace('_', ' ')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-2 sm:flex sm:justify-between">
+                          <div className="sm:flex">
+                            <p className="flex items-center text-sm text-gray-500">
+                              <span className="truncate">{job.company}</span>
+                            </p>
+                            <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                              <span className="truncate">{job.location}</span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <p className="text-sm text-gray-500 line-clamp-2">{job.description}</p>
                         </div>
                       </div>
-                      <div className="mt-2 sm:flex sm:justify-between">
-                        <div className="sm:flex">
-                          <p className="flex items-center text-sm text-gray-500">
-                            <span className="truncate">{job.company}</span>
-                          </p>
-                          <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                            <span className="truncate">{job.location}</span>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-4">
-                        <p className="text-sm text-gray-500 line-clamp-2">{job.description}</p>
-                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {pagination.totalPages > 1 && (
+                <div className="mt-6">
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-700">
+                      Showing <span className="font-medium">{jobs.length > 0 ? (pagination.page - 1) * pagination.pageSize + 1 : 0}</span> to <span className="font-medium">{Math.min(pagination.page * pagination.pageSize, pagination.totalCount)}</span> of{' '}
+                      <span className="font-medium">{pagination.totalCount}</span> results
                     </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                    <nav className="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                      {renderPaginationButtons()}
+                    </nav>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

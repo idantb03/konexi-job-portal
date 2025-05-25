@@ -6,16 +6,23 @@ import { ListAllJobs } from '@/use-case/jobs/ListAllJobs';
 const jobRepository = new JobRepository();
 const listAllJobsUseCase = new ListAllJobs(jobRepository);
 
-// GET handler to fetch all jobs with optional filtering
+// GET handler to fetch all jobs with optional filtering and pagination
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const location = searchParams.get('location');
     const jobType = searchParams.get('jobType') as JobTypes | null;
     
-    const jobs = await listAllJobsUseCase.execute({ location, jobType });
+    // Parse pagination parameters
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
     
-    return NextResponse.json({ jobs });
+    const result = await listAllJobsUseCase.execute(
+      { location, jobType },
+      { page, pageSize }
+    );
+    
+    return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Failed to fetch jobs' },
