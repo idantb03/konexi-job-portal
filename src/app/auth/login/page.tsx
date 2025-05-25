@@ -44,10 +44,7 @@ export default function LoginPage() {
     if (!isLoading && isSessionStable) {
       if (user) {
         setIsRedirecting(true);
-        const redirectTimer = setTimeout(() => {
-          router.replace('/dashboard');
-        }, 100);
-        return () => clearTimeout(redirectTimer);
+        window.location.href = '/dashboard';
       } else {
         const showTimer = setTimeout(() => {
           setShouldShowContent(true);
@@ -55,7 +52,7 @@ export default function LoginPage() {
         return () => clearTimeout(showTimer);
       }
     }
-  }, [user, isLoading, isSessionStable, router]);
+  }, [user, isLoading, isSessionStable]);
 
   if (isLoading || !isSessionStable || isRedirecting || !shouldShowContent) {
     return (
