@@ -12,10 +12,10 @@ const authService = new AuthService();
 // GET handler to fetch a job by id
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json(
@@ -45,10 +45,10 @@ export async function GET(
 // PUT handler to update a job
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Get current user from auth header
     const authHeader = request.headers.get('Authorization');
@@ -104,10 +104,10 @@ export async function PUT(
 // DELETE handler to delete a job
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Get current user from auth header
     const authHeader = request.headers.get('Authorization');
