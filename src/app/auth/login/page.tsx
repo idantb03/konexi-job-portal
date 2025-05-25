@@ -36,15 +36,28 @@ function LoginContent() {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, isLoading } = useAuthContext();
+  const { user, isLoading, isSessionStable } = useAuthContext();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [shouldShowContent, setShouldShowContent] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && user) {
-      router.replace('/dashboard');
+    if (!isLoading && isSessionStable) {
+      if (user) {
+        setIsRedirecting(true);
+        const redirectTimer = setTimeout(() => {
+          router.replace('/dashboard');
+        }, 100);
+        return () => clearTimeout(redirectTimer);
+      } else {
+        const showTimer = setTimeout(() => {
+          setShouldShowContent(true);
+        }, 100);
+        return () => clearTimeout(showTimer);
+      }
     }
-  }, [isLoading, user, router]);
+  }, [user, isLoading, isSessionStable, router]);
 
-  if (isLoading) {
+  if (isLoading || !isSessionStable || isRedirecting || !shouldShowContent) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
