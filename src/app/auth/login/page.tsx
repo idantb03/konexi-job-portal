@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { AuthForm } from '../../../components/auth/AuthForm';
 import { useEffect, useState, Suspense } from 'react';
 import { useAuthContext } from '@/providers/AuthProvider';
+import { Button } from '@/components/Button';
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -21,12 +22,13 @@ function LoginContent() {
       {notification && (
         <div className="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
           <span>{notification}</span>
-          <button
+          <Button
             onClick={() => setNotification(null)}
-            className="ml-2 text-green-700 hover:text-green-900"
+            variant="secondary"
+            className="ml-2 !p-1 !text-green-700 hover:!text-green-900"
           >
             ×
-          </button>
+          </Button>
         </div>
       )}
       <AuthForm type="login" />
