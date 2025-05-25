@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMyJobs } from '@/features/dashboard/useMyJobs';
+import { useJobDetails } from '@/features/jobs/useJobDetails';
 import { UpdateJobRequest } from '@/features/jobs/types';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { JobTypes } from '@/domain/enums/JobTypes';
@@ -18,10 +19,11 @@ type PageParams = {
 
 export default function EditJobPage({ params }: { params: Promise<PageParams> }) {
   const router = useRouter();
-  const { getJobById, updateJob } = useMyJobs();
-  const [isLoading, setIsLoading] = useState(true);
+  const { updateJob } = useMyJobs();
   const [error, setError] = useState<string | null>(null);
   const unwrappedParams = use(params);
+  const { job, isLoading: isJobLoading } = useJobDetails(unwrappedParams.jobId);
+  
   const [formData, setFormData] = useState<UpdateJobRequest>({
     title: '',
     company: '',
@@ -31,27 +33,16 @@ export default function EditJobPage({ params }: { params: Promise<PageParams> })
   });
 
   useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        const job = await getJobById(unwrappedParams.jobId);
-        if (job) {
-          setFormData({
-            title: job.title,
-            company: job.company,
-            description: job.description,
-            location: job.location,
-            jobType: job.jobTypes
-          });
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch job');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchJob();
-  }, [unwrappedParams.jobId, getJobById]);
+    if (job) {
+      setFormData({
+        title: job.title,
+        company: job.company,
+        description: job.description,
+        location: job.location,
+        jobType: job.jobType
+      });
+    }
+  }, [job]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -92,7 +83,7 @@ export default function EditJobPage({ params }: { params: Promise<PageParams> })
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              {isLoading ? (
+              {isJobLoading ? (
                 <div className="text-center py-12">
                   <div className="spinner"></div>
                   <p className="mt-2 text-gray-600">Loading job details...</p>

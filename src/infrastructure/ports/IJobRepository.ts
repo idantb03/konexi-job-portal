@@ -1,7 +1,7 @@
 import { Job } from '../../domain/entities/Job';
 
 export interface JobFilters {
-  location?: string | null;
+  keyword?: string | null;
   jobType?: string | null;
 }
 
