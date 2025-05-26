@@ -21,7 +21,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased`}>
+      <head>
+        <style>{`
+          #__next {
+            background-color: white;
+          }
+          body {
+            background-color: white;
+          }
+        `}</style>
+      </head>
+      <body className={`${inter.variable} antialiased bg-white`}>
         <QueryProvider>
           <AuthProvider>{children}</AuthProvider>
         </QueryProvider>

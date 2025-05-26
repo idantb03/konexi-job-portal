@@ -13,7 +13,7 @@ export default function Loading({ fullScreen = true, size = 'md' }: LoadingProps
   };
 
   const containerClasses = fullScreen 
-    ? 'fixed inset-0 bg-white flex items-center justify-center z-50' 
+    ? 'fixed inset-0 bg-white flex items-center justify-center z-[9999]' 
     : 'flex items-center justify-center p-4';
 
   return (
