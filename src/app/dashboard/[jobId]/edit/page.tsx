@@ -19,8 +19,9 @@ type PageParams = {
 
 export default function EditJobPage({ params }: { params: Promise<PageParams> }) {
   const router = useRouter();
-  const { updateJob } = useMyJobs();
+  const { updateJob, refreshJobs } = useMyJobs();
   const [error, setError] = useState<string | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const unwrappedParams = use(params);
   const { job, isLoading: isJobLoading } = useJobDetails(unwrappedParams.jobId);
   
@@ -52,12 +53,16 @@ export default function EditJobPage({ params }: { params: Promise<PageParams> })
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsUpdating(true);
     
     try {
       await updateJob(unwrappedParams.jobId, formData);
+      await refreshJobs();
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to update job');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -153,15 +158,24 @@ export default function EditJobPage({ params }: { params: Promise<PageParams> })
                       <div className="flex justify-end">
                         <Link
                           href="/dashboard"
-                          className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          className={`bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          onClick={(e) => isUpdating && e.preventDefault()}
                         >
                           Cancel
                         </Link>
                         <Button
                           type="submit"
                           className="ml-3"
+                          disabled={isUpdating}
                         >
-                          Update
+                          {isUpdating ? (
+                            <div className="flex items-center">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                              Updating...
+                            </div>
+                          ) : (
+                            'Update'
+                          )}
                         </Button>
                       </div>
                     </div>
