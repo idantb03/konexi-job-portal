@@ -158,6 +158,11 @@ export const AuthForm = ({ type }: AuthFormProps) => {
               ) : null}
               {type === 'login' ? 'Sign in' : 'Sign up'}
             </button>
+            <div className="mt-4 text-center">
+              <Link href="/" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                Return to Home
+              </Link>
+            </div>
           </div>
         </form>
       </div>

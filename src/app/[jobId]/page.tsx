@@ -2,12 +2,12 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useJobDetails } from '@/features/jobs/useJobDetails';
+import { usePublicJobDetails } from '@/features/jobs/useJobDetails';
 
 export default function JobDetailsPage() {
   const params = useParams();
   const unwrappedParams = params as { jobId: string };
-  const { job, isLoading, error } = useJobDetails(unwrappedParams.jobId);
+  const { job, isLoading, error } = usePublicJobDetails(unwrappedParams.jobId);
 
   if (isLoading) {
     return (
@@ -43,7 +43,7 @@ export default function JobDetailsPage() {
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-gray-900">Job Details</h1>
-            <Link href="/jobs" className="text-indigo-600 hover:text-indigo-900">
+            <Link href="/" className="text-indigo-600 hover:text-indigo-900">
               Back to Jobs
             </Link>
           </div>
