@@ -14,10 +14,10 @@ interface PaginatedJobsResult {
 export function useJobs(filters?: JobFilters, initialPage = 1, pageSize = 10) {
   const [page, setPage] = useState(initialPage);
   
-  const queryKey = ['jobs', 'public', { ...filters, page, pageSize }];
+  const queryKey = ['jobs', { ...filters, page, pageSize }];
   
   const fetchJobs = useCallback(async ({ queryKey }: { queryKey: any[] }) => {
-    const [, , params] = queryKey;
+    const [, params] = queryKey;
     let url = '/jobs/public';
     const urlParams = new URLSearchParams();
     
