@@ -5,6 +5,11 @@ const axiosClient = axios.create({
   baseURL: '/api',
 });
 
+// Create a public client that doesn't include auth headers
+export const publicAxiosClient = axios.create({
+  baseURL: '/api',
+});
+
 // Add a request interceptor
 axiosClient.interceptors.request.use(
   async (config) => {
