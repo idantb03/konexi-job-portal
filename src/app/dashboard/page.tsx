@@ -5,51 +5,17 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useMyJobs } from '@/features/dashboard/useMyJobs';
 import Link from 'next/link';
 import { useState } from 'react';
-import { CreateJobRequest } from '@/features/jobs/types';
-import { JobTypes } from '@/domain/enums/JobTypes';
+import { CreateForm } from '@/components/CreateForm';
+import { DeleteModal } from '@/components/DeleteModal';
+import { JobList } from '@/app/dashboard/JobList';
+import { Button } from '@/components/Button';
 
 export default function DashboardPage() {
   const { user, signOut } = useAuthContext();
   const { jobs, isLoading, error, createJob, deleteJob } = useMyJobs();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
-  const [formData, setFormData] = useState<CreateJobRequest>({
-    title: '',
-    company: '',
-    description: '',
-    location: '',
-    jobType: JobTypes.FULL_TIME
-  });
-  const [formError, setFormError] = useState<string | null>(null);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
-    setIsSubmitting(true);
-    
-    try {
-      await createJob(formData);
-      setShowCreateForm(false);
-      setFormData({
-        title: '',
-        company: '',
-        description: '',
-        location: '',
-        jobType: JobTypes.FULL_TIME
-      });
-    } catch (err: any) {
-      setFormError(err.response?.data?.error || 'Failed to create job');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleDeleteClick = (jobId: string) => {
     setJobToDelete(jobId);
@@ -63,7 +29,7 @@ export default function DashboardPage() {
       setShowDeleteModal(false);
       setJobToDelete(null);
     } catch (err: any) {
-      setFormError(err.response?.data?.error || 'Failed to delete job');
+      console.error('Failed to delete job:', err);
     }
   };
 
@@ -88,12 +54,9 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <button
-                    onClick={signOut}
-                    className="relative inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
+                  <Button onClick={signOut}>
                     Sign out
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -136,197 +99,30 @@ export default function DashboardPage() {
                       <h3 className="text-lg leading-6 font-medium text-gray-900">My Jobs</h3>
                       <p className="mt-1 max-w-2xl text-sm text-gray-500">Jobs you've created</p>
                     </div>
-                    <button
+                    <Button
                       onClick={() => setShowCreateForm(!showCreateForm)}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
                       {showCreateForm ? 'Cancel' : 'Create Job'}
-                    </button>
+                    </Button>
                   </div>
 
                   {showCreateForm && (
-                    <div className="px-4 py-5 bg-gray-50 sm:px-6">
-                      <form onSubmit={handleSubmit}>
-                        {formError && (
-                          <div className="mb-4 p-2 bg-red-50 text-red-700 rounded">
-                            {formError}
-                          </div>
-                        )}
-                        <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                          <div className="sm:col-span-3">
-                            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                              Job Title
-                            </label>
-                            <div className="mt-1">
-                              <input
-                                type="text"
-                                name="title"
-                                id="title"
-                                required
-                                value={formData.title}
-                                onChange={handleInputChange}
-                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-3">
-                            <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-                              Company
-                            </label>
-                            <div className="mt-1">
-                              <input
-                                type="text"
-                                name="company"
-                                id="company"
-                                required
-                                value={formData.company}
-                                onChange={handleInputChange}
-                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-3">
-                            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                              Location
-                            </label>
-                            <div className="mt-1">
-                              <input
-                                type="text"
-                                name="location"
-                                id="location"
-                                required
-                                value={formData.location}
-                                onChange={handleInputChange}
-                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-3">
-                            <label htmlFor="jobType" className="block text-sm font-medium text-gray-700">
-                              Job Type
-                            </label>
-                            <div className="mt-1">
-                              <select
-                                id="jobType"
-                                name="jobType"
-                                required
-                                value={formData.jobType}
-                                onChange={handleInputChange}
-                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                              >
-                                {Object.values(JobTypes).map((type) => (
-                                  <option key={type} value={type}>
-                                    {type.replace('_', ' ')}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="sm:col-span-6">
-                            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                              Description
-                            </label>
-                            <div className="mt-1">
-                              <textarea
-                                id="description"
-                                name="description"
-                                rows={4}
-                                required
-                                value={formData.description}
-                                onChange={handleInputChange}
-                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="pt-5">
-                          <div className="flex justify-end">
-                            <button
-                              type="button"
-                              onClick={() => setShowCreateForm(false)}
-                              disabled={isSubmitting}
-                              className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              disabled={isSubmitting}
-                              className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                            >
-                              {isSubmitting ? 'Creating...' : 'Create'}
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
+                    <CreateForm
+                      onSubmit={async (data) => {
+                        await createJob(data);
+                        setShowCreateForm(false);
+                      }}
+                      onCancel={() => setShowCreateForm(false)}
+                    />
                   )}
 
                   <div className="border-t border-gray-200">
-                    {isLoading ? (
-                      <div className="text-center py-6">
-                        <div className="spinner"></div>
-                        <p className="mt-2 text-gray-600">Loading jobs...</p>
-                      </div>
-                    ) : error ? (
-                      <div className="px-4 py-5 sm:px-6">
-                        <div className="bg-red-50 p-4 rounded-md">
-                          <h3 className="text-sm font-medium text-red-800">Error</h3>
-                          <div className="mt-2 text-sm text-red-700">
-                            <p>{error}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : jobs.length === 0 ? (
-                      <div className="text-center py-6">
-                        <p className="text-gray-500">You haven't created any jobs yet.</p>
-                      </div>
-                    ) : (
-                      <ul className="divide-y divide-gray-200">
-                        {jobs.map((job) => (
-                          <li key={job.id}>
-                            <div className="px-4 py-4 sm:px-6">
-                              <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-medium text-indigo-600 truncate">{job.title}</h3>
-                                <div className="ml-2 flex-shrink-0 flex">
-                                  <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    {job.jobType.replace('_', ' ')}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="mt-2 sm:flex sm:justify-between">
-                                <div className="sm:flex">
-                                  <p className="flex items-center text-sm text-gray-500">
-                                    <span className="truncate">{job.company}</span>
-                                  </p>
-                                  <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                                    <span className="truncate">{job.location}</span>
-                                  </p>
-                                </div>
-                                <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                                  <div className="flex space-x-2">
-                                    <Link href={`/dashboard/${job.id}/edit`} className="text-indigo-600 hover:text-indigo-900">
-                                      Edit
-                                    </Link>
-                                    <button 
-                                      onClick={() => handleDeleteClick(job.id)}
-                                      className="text-red-600 hover:text-red-900"
-                                    >
-                                      Delete
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    <JobList
+                      jobs={jobs}
+                      isLoading={isLoading}
+                      error={error}
+                      onDeleteClick={handleDeleteClick}
+                    />
                   </div>
                 </div>
               </div>
@@ -335,28 +131,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Delete</h3>
-            <p className="text-sm text-gray-500 mb-4">Are you sure you want to delete this job? This action cannot be undone.</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                className="bg-red-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteModal
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setShowDeleteModal(false)}
+        />
       )}
     </ProtectedRoute>
   );

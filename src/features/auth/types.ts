@@ -4,6 +4,7 @@ export interface AuthState {
   user: User | null;
   isLoading: boolean;
   error: string | null;
+  isSessionStable: boolean;
 }
 
 export interface AuthContextType extends AuthState {
