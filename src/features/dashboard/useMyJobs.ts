@@ -27,6 +27,7 @@ export function useMyJobs() {
     },
     onSuccess: (newJob) => {
       queryClient.setQueryData(['jobs'], (oldJobs: Job[] = []) => [...oldJobs, newJob]);
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
     }
   });
 
@@ -76,6 +77,7 @@ export function useMyJobs() {
     updateJob: (jobId: string, jobData: UpdateJobRequest) => 
       updateJobMutation.mutateAsync({ jobId, jobData }),
     deleteJob: deleteJobMutation.mutateAsync,
+    isDeletingJob: (jobId: string) => deleteJobMutation.isPending && deleteJobMutation.variables === jobId,
     getJobById,
     refreshJobs: () => queryClient.invalidateQueries({ queryKey: ['jobs'] })
   };

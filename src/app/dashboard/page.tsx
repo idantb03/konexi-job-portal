@@ -12,7 +12,7 @@ import { Button } from '@/components/Button';
 
 export default function DashboardPage() {
   const { user, signOut } = useAuthContext();
-  const { jobs, isLoading, error, createJob, deleteJob } = useMyJobs();
+  const { jobs, isLoading, error, createJob, deleteJob, isDeletingJob } = useMyJobs();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
@@ -24,10 +24,10 @@ export default function DashboardPage() {
 
   const handleDeleteConfirm = async () => {
     if (!jobToDelete) return;
+    setShowDeleteModal(false);
+    setJobToDelete(null);
     try {
       await deleteJob(jobToDelete);
-      setShowDeleteModal(false);
-      setJobToDelete(null);
     } catch (err: any) {
       console.error('Failed to delete job:', err);
     }
@@ -125,6 +125,7 @@ export default function DashboardPage() {
                       isLoading={isLoading}
                       error={error}
                       onDeleteClick={handleDeleteClick}
+                      isDeletingJob={isDeletingJob}
                     />
                   </div>
                 </div>
