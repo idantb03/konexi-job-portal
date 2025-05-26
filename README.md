@@ -10,8 +10,7 @@ This project follows Clean Architecture principles with the following structure:
 src/
 ├── domain/           # Core business logic
 │   ├── entities/     # Business objects
-│   ├── enums/        # Type definitions
-│   └── errors/       # Custom errors
+│   └── enums/        # Type definitions
 ├── use-case/         # Application business rules
 │   ├── auth/         # Authentication use cases
 │   └── jobs/         # Job-related use cases
@@ -20,15 +19,17 @@ src/
 │   ├── supabase/     # Database & auth
 │   └── ports/        # External service interfaces
 ├── features/         # Feature-based UI components
-│   ├── auth/         # Auth UI
-│   ├── jobs/         # Jobs UI
-│   └── dashboard/    # Dashboard UI
+│   ├── auth/         # Auth FE Services
+│   ├── jobs/         # Jobs FE Services
+│   └── dashboard/    # Dashboard FE Services
 ├── components/       # Reusable UI components
 ├── providers/        # Context providers
-├── hooks/           # Custom React hooks
-├── utils/           # Utility functions
-└── app/             # Next.js app router pages
+├── hooks/            # Custom React hooks
+├── utils/            # Utility functions
+└── app/              # Next.js app router pages
 ```
+
+We use both TypeScript interfaces and types throughout the project. Interfaces are primarily used for defining object shapes and contracts (like repository interfaces), while types are used for unions, intersections, and more complex type definitions. This gives us flexibility while maintaining strong type safety.
 
 ## Prerequisites
 
@@ -37,7 +38,7 @@ src/
 
 ## Environment Setup
 
-Create a `.env.local` file in the root directory with the following variables:
+Create a `.env` file in the root directory with the following variables:
 
 ```bash
 SUPABASE_URL=your_supabase_url
@@ -68,7 +69,6 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - `pnpm start` - Start production server
 - `pnpm test` - Run tests
 - `pnpm test:watch` - Run tests in watch mode
-- `pnpm lint` - Run ESLint
 
 ## Testing
 
