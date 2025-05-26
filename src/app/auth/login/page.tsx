@@ -13,8 +13,9 @@ function LoginContent() {
 
   useEffect(() => {
     const registered = searchParams.get('registered');
+    const message = searchParams.get('message');
     if (registered === 'true') {
-      setNotification('Account created successfully! Please sign in.');
+      setNotification(message || 'Account created successfully! Please sign in.');
     }
   }, [searchParams]);
 
