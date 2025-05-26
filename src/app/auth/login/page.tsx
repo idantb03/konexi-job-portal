@@ -5,6 +5,7 @@ import { AuthForm } from '../../../components/auth/AuthForm';
 import { useEffect, useState, Suspense } from 'react';
 import { useAuthContext } from '@/providers/AuthProvider';
 import { Button } from '@/components/Button';
+import Loading from '@/components/Loading';
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -12,8 +13,9 @@ function LoginContent() {
 
   useEffect(() => {
     const registered = searchParams.get('registered');
+    const message = searchParams.get('message');
     if (registered === 'true') {
-      setNotification('Account created successfully! Please sign in.');
+      setNotification(message || 'Account created successfully! Please sign in.');
     }
   }, [searchParams]);
 
@@ -58,9 +60,7 @@ export default function LoginPage() {
 
   if (isLoading || !isSessionStable || isRedirecting || !shouldShowContent) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-      </div>
+      <Loading fullScreen={true} size="md" />
     );
   }
 
@@ -70,9 +70,7 @@ export default function LoginPage() {
 
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-      </div>
+      <Loading fullScreen={true} size="md" />
     }>
       <LoginContent />
     </Suspense>

@@ -3,19 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  background-color: white;
+  color: rgb(var(--foreground-rgb));
+}
+
+/* Prevent black flash during page transitions */
+html {
+  background-color: white;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: white;
+}
+
+/* Ensure loading state has white background */
+#__next {
+  background-color: white;
+}
+
+/* Ensure all page transitions have white background */
+[data-nextjs-page-transition] {
+  background-color: white;
 }

@@ -31,4 +31,5 @@ export interface UpdateJobRequest {
 export interface JobFilters {
   keyword?: string | null;
   jobType?: JobTypes | null;
+  location?: string | null;
 }

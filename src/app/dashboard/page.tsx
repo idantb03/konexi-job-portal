@@ -54,7 +54,10 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <Button onClick={signOut}>
+                  <Button onClick={async () => {
+                    await signOut();
+                    window.location.href = '/';
+                  }}>
                     Sign out
                   </Button>
                 </div>

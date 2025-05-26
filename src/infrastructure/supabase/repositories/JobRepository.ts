@@ -67,6 +67,10 @@ export class JobRepository implements IJobRepository {
       query = query.eq('job_type', filters.jobType);
     }
     
+    if (filters?.location) {
+      query = query.ilike('location', `%${filters.location}%`);
+    }
+    
     // Get total count first
     const countResult = await query;
     const totalCount = countResult.count || 0;

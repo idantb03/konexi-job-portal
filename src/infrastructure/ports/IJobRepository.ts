@@ -3,6 +3,7 @@ import { Job } from '../../domain/entities/Job';
 export interface JobFilters {
   keyword?: string | null;
   jobType?: string | null;
+  location?: string | null;
 }
 
 export interface PaginationParams {

@@ -31,7 +31,7 @@ export const AuthForm = ({ type }: AuthFormProps) => {
         router.push('/dashboard');
       } else {
         await signUp(email, password);
-        router.push('/auth/login?registered=true');
+        router.push('/auth/login?registered=true&message=Please check your email to verify your account');
       }
     } catch (err: any) {
       setFormError(err.message || 'An error occurred');
@@ -65,7 +65,7 @@ export const AuthForm = ({ type }: AuthFormProps) => {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <input type="hidden" name="remember" defaultValue="true" />
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="rounded-md shadow-sm space-y-4">
             <Input
               label="Email address"
               name="email"

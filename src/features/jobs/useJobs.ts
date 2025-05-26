@@ -29,6 +29,10 @@ export function useJobs(filters?: JobFilters, initialPage = 1, pageSize = 10) {
       urlParams.append('jobType', params.jobType);
     }
     
+    if (params.location) {
+      urlParams.append('location', params.location);
+    }
+    
     // Add pagination params
     urlParams.append('page', params.page.toString());
     urlParams.append('pageSize', params.pageSize.toString());
