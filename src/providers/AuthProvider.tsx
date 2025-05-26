@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ...prev,
         user: session?.user || null,
         isLoading: false,
-        isSessionStable: false,
+        isSessionStable: prev.isSessionStable,
       }));
     });
 
@@ -75,12 +75,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null, isSessionStable: false }));
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
       const userData = await authSignIn({ email, password });
       setState(prev => ({ 
         ...prev, 
         user: userData?.user?.user || null,
-        isLoading: false 
+        isLoading: false,
+        isSessionStable: true
       }));
     } catch (error: any) {
       setState(prev => ({ ...prev, error: error.message, isLoading: false }));
@@ -90,9 +91,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string) => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null, isSessionStable: false }));
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
       await authSignUp({ email, password, confirmPassword: password });
-      setState(prev => ({ ...prev, isLoading: false }));
+      setState(prev => ({ ...prev, isLoading: false, isSessionStable: true }));
     } catch (error: any) {
       setState(prev => ({ ...prev, error: error.message, isLoading: false }));
       throw error;
@@ -101,13 +102,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null, isSessionStable: false }));
+      setState(prev => ({ ...prev, isLoading: true, error: null }));
       await authSignOut();
       setState({
         user: null,
         isLoading: false,
         error: null,
-        isSessionStable: false
+        isSessionStable: true
       });
     } catch (error: any) {
       setState(prev => ({ ...prev, error: error.message, isLoading: false }));
