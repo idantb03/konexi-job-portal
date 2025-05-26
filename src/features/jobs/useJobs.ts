@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import axios from 'axios';
+import { publicAxiosClient } from '../../infrastructure/axios/client';
 import { Job, JobFilters } from './types';
 import { useQuery } from '@tanstack/react-query';
 
@@ -18,7 +18,7 @@ export function useJobs(filters?: JobFilters, initialPage = 1, pageSize = 10) {
   
   const fetchJobs = useCallback(async ({ queryKey }: { queryKey: any[] }) => {
     const [, , params] = queryKey;
-    let url = '/api/jobs/public';
+    let url = '/jobs/public';
     const urlParams = new URLSearchParams();
     
     if (params.keyword) {
@@ -41,7 +41,7 @@ export function useJobs(filters?: JobFilters, initialPage = 1, pageSize = 10) {
       url += `?${urlParams.toString()}`;
     }
     
-    const response = await axios.get<PaginatedJobsResult>(url);
+    const response = await publicAxiosClient.get<PaginatedJobsResult>(url);
     return response.data;
   }, []);
 

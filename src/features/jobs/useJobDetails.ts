@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import axiosClient from '../../infrastructure/axios/client';
+import { publicAxiosClient } from '../../infrastructure/axios/client';
 import { Job } from './types';
 
 export function useJobDetails(jobId: string) {
@@ -12,7 +12,7 @@ export function useJobDetails(jobId: string) {
     queryKey: ['jobs', jobId],
     queryFn: async () => {
       try {
-        const response = await axiosClient.get(`/jobs/${jobId}`);
+        const response = await publicAxiosClient.get(`/jobs/${jobId}`);
         return response.data.job as Job;
       } catch (err) {
         throw err;
