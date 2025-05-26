@@ -1,5 +1,5 @@
 'use client'
-import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { ReactNode, createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../infrastructure/supabase/client';
 import { AuthContextType, AuthState } from '../features/auth/types';
@@ -9,6 +9,7 @@ const initialState: AuthState = {
   user: null,
   isLoading: true,
   error: null,
+  isSessionStable: false,
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<AuthState>(initialState);
   const { signIn: authSignIn, signUp: authSignUp, signOut: authSignOut } = useAuth();
+  const isStabilizing = useRef(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -34,6 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ...prev,
         user: session?.user || null,
         isLoading: false,
+        isSessionStable: false,
       }));
     });
 
@@ -42,9 +45,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!state.isLoading && !isStabilizing.current) {
+      isStabilizing.current = true;
+      
+      const stabilizeTimer = setTimeout(async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const sessionUser = session?.user || null;
+          
+          setState(prev => ({ 
+            ...prev, 
+            user: sessionUser || prev.user,
+            isSessionStable: true 
+          }));
+        } catch (error) {
+          setState(prev => ({ ...prev, isSessionStable: true }));
+        } finally {
+          isStabilizing.current = false;
+        }
+      }, 300);
+      
+      return () => {
+        clearTimeout(stabilizeTimer);
+        isStabilizing.current = false;
+      };
+    }
+  }, [state.isLoading]);
+
   const signIn = async (email: string, password: string) => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState(prev => ({ ...prev, isLoading: true, error: null, isSessionStable: false }));
       const userData = await authSignIn({ email, password });
       setState(prev => ({ 
         ...prev, 
@@ -59,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string) => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState(prev => ({ ...prev, isLoading: true, error: null, isSessionStable: false }));
       await authSignUp({ email, password, confirmPassword: password });
       setState(prev => ({ ...prev, isLoading: false }));
     } catch (error: any) {
@@ -70,12 +101,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
+      setState(prev => ({ ...prev, isLoading: true, error: null, isSessionStable: false }));
       await authSignOut();
       setState({
         user: null,
         isLoading: false,
-        error: null
+        error: null,
+        isSessionStable: false
       });
     } catch (error: any) {
       setState(prev => ({ ...prev, error: error.message, isLoading: false }));

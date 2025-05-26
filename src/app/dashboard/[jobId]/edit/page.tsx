@@ -4,9 +4,14 @@ import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMyJobs } from '@/features/dashboard/useMyJobs';
+import { useJobDetails } from '@/features/jobs/useJobDetails';
 import { UpdateJobRequest } from '@/features/jobs/types';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { JobTypes } from '@/domain/enums/JobTypes';
+import { Input } from '@/components/Input';
+import { Textarea } from '@/components/Textarea';
+import { Select } from '@/components/Select';
+import { Button } from '@/components/Button';
 
 type PageParams = {
   jobId: string;
@@ -14,10 +19,11 @@ type PageParams = {
 
 export default function EditJobPage({ params }: { params: Promise<PageParams> }) {
   const router = useRouter();
-  const { getJobById, updateJob } = useMyJobs();
-  const [isLoading, setIsLoading] = useState(true);
+  const { updateJob } = useMyJobs();
   const [error, setError] = useState<string | null>(null);
   const unwrappedParams = use(params);
+  const { job, isLoading: isJobLoading } = useJobDetails(unwrappedParams.jobId);
+  
   const [formData, setFormData] = useState<UpdateJobRequest>({
     title: '',
     company: '',
@@ -27,27 +33,16 @@ export default function EditJobPage({ params }: { params: Promise<PageParams> })
   });
 
   useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        const job = await getJobById(unwrappedParams.jobId);
-        if (job) {
-          setFormData({
-            title: job.title,
-            company: job.company,
-            description: job.description,
-            location: job.location,
-            jobType: job.jobTypes
-          });
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch job');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchJob();
-  }, [unwrappedParams.jobId, getJobById]);
+    if (job) {
+      setFormData({
+        title: job.title,
+        company: job.company,
+        description: job.description,
+        location: job.location,
+        jobType: job.jobType
+      });
+    }
+  }, [job]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -66,6 +61,11 @@ export default function EditJobPage({ params }: { params: Promise<PageParams> })
     }
   };
 
+  const jobTypeOptions = (Object.values(JobTypes) as JobTypes[]).map((type) => ({
+    value: type,
+    label: type.replace('_', ' ')
+  }));
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-100">
@@ -83,7 +83,7 @@ export default function EditJobPage({ params }: { params: Promise<PageParams> })
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              {isLoading ? (
+              {isJobLoading ? (
                 <div className="text-center py-12">
                   <div className="spinner"></div>
                   <p className="mt-2 text-gray-600">Loading job details...</p>
@@ -106,95 +106,47 @@ export default function EditJobPage({ params }: { params: Promise<PageParams> })
                 <div className="px-4 py-5 sm:p-6">
                   <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                      <div className="sm:col-span-3">
-                        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                          Job Title
-                        </label>
-                        <div className="mt-1">
-                          <input
-                            type="text"
-                            name="title"
-                            id="title"
-                            required
-                            value={formData.title}
-                            onChange={handleInputChange}
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                          />
-                        </div>
-                      </div>
+                      <Input
+                        label="Job Title"
+                        name="title"
+                        required
+                        value={formData.title}
+                        onChange={handleInputChange}
+                      />
 
-                      <div className="sm:col-span-3">
-                        <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-                          Company
-                        </label>
-                        <div className="mt-1">
-                          <input
-                            type="text"
-                            name="company"
-                            id="company"
-                            required
-                            value={formData.company}
-                            onChange={handleInputChange}
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                          />
-                        </div>
-                      </div>
+                      <Input
+                        label="Company"
+                        name="company"
+                        required
+                        value={formData.company}
+                        onChange={handleInputChange}
+                      />
 
-                      <div className="sm:col-span-3">
-                        <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                          Location
-                        </label>
-                        <div className="mt-1">
-                          <input
-                            type="text"
-                            name="location"
-                            id="location"
-                            required
-                            value={formData.location}
-                            onChange={handleInputChange}
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                          />
-                        </div>
-                      </div>
+                      <Input
+                        label="Location"
+                        name="location"
+                        required
+                        value={formData.location}
+                        onChange={handleInputChange}
+                      />
 
-                      <div className="sm:col-span-3">
-                        <label htmlFor="jobType" className="block text-sm font-medium text-gray-700">
-                          Job Type
-                        </label>
-                        <div className="mt-1">
-                          <select
-                            id="jobType"
-                            name="jobType"
-                            required
-                            value={formData.jobType}
-                            onChange={handleInputChange}
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                          >
-                            {(Object.values(JobTypes) as JobTypes[]).map((type) => (
-                              <option key={type} value={type}>
-                                {type.replace('_', ' ')}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
+                      <Select
+                        label="Job Type"
+                        name="jobType"
+                        required
+                        value={formData.jobType}
+                        onChange={handleInputChange}
+                        options={jobTypeOptions}
+                      />
 
-                      <div className="sm:col-span-6">
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                          Description
-                        </label>
-                        <div className="mt-1">
-                          <textarea
-                            id="description"
-                            name="description"
-                            rows={4}
-                            required
-                            value={formData.description}
-                            onChange={handleInputChange}
-                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                          />
-                        </div>
-                      </div>
+                      <Textarea
+                        label="Description"
+                        name="description"
+                        required
+                        rows={4}
+                        value={formData.description}
+                        onChange={handleInputChange}
+                      />
                     </div>
 
                     <div className="pt-5">
@@ -205,12 +157,12 @@ export default function EditJobPage({ params }: { params: Promise<PageParams> })
                         >
                           Cancel
                         </Link>
-                        <button
+                        <Button
                           type="submit"
-                          className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          className="ml-3"
                         >
                           Update
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </form>
