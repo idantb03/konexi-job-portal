@@ -66,6 +66,13 @@ export const useAuth = () => {
       const result = await response.json();
       
       if (!response.ok) {
+        // Check if this is an existing user error
+        if (result.error && (
+          result.error.includes('User with this email already exists') ||
+          result.error.includes('already registered')
+        )) {
+          throw new Error('User with this email already exists');
+        }
         throw new Error(result.error || 'Failed to sign up');
       }
       

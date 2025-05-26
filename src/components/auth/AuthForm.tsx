@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthContext } from '../../providers/AuthProvider';
@@ -15,10 +15,18 @@ export const AuthForm = ({ type }: AuthFormProps) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [isExistingUser, setIsExistingUser] = useState(false);
+
+  // Clear error states when form type changes
+  useEffect(() => {
+    setFormError(null);
+    setIsExistingUser(false);
+  }, [type]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    setIsExistingUser(false);
 
     if (type === 'signup' && password !== confirmPassword) {
       setFormError('Passwords do not match');
@@ -34,7 +42,14 @@ export const AuthForm = ({ type }: AuthFormProps) => {
         router.push('/auth/login?registered=true&message=Please check your email to verify your account');
       }
     } catch (err: any) {
-      setFormError(err.message || 'An error occurred');
+      const errorMessage = err.message || 'An error occurred';
+      setFormError(errorMessage);
+      
+      // Check if the error is about an existing user
+      if (errorMessage.toLowerCase().includes('user with this email already exists') || 
+          errorMessage.toLowerCase().includes('already registered')) {
+        setIsExistingUser(true);
+      }
     }
   };
 
@@ -106,12 +121,21 @@ export const AuthForm = ({ type }: AuthFormProps) => {
           </div>
 
           {(formError || error) && (
-            <div className="rounded-md bg-red-50 p-4">
+            <div className={`rounded-md ${isExistingUser ? 'bg-yellow-50' : 'bg-red-50'} p-4`}>
               <div className="flex">
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Error</h3>
-                  <div className="mt-2 text-sm text-red-700">
+                  <h3 className={`text-sm font-medium ${isExistingUser ? 'text-yellow-800' : 'text-red-800'}`}>
+                    {isExistingUser ? 'Account exists' : 'Error'}
+                  </h3>
+                  <div className={`mt-2 text-sm ${isExistingUser ? 'text-yellow-700' : 'text-red-700'}`}>
                     <p>{formError || error}</p>
+                    {isExistingUser && (
+                      <p className="mt-2">
+                        <Link href="/auth/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+                          Click here to sign in
+                        </Link> instead.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

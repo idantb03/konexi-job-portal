@@ -11,6 +11,12 @@ export class AuthService implements IAuthService {
       });
 
       if (error) throw error;
+      
+      // Check if user already exists (confirmed user has empty identities array)
+      if (data?.user && data.user.identities?.length === 0) {
+        throw new Error('User with this email already exists');
+      }
+      
       return { data, error: null };
     } catch (error) {
       return { data: null, error: error as Error };
