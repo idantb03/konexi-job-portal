@@ -13,11 +13,17 @@ import { useDebounce } from '@/hooks/useDebounce';
 export default function JobsPage() {
   const [keyword, setKeyword] = useState<string>('');
   const [jobType, setJobType] = useState<JobTypes | null>(null);
+  const [location, setLocation] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const debouncedKeyword = useDebounce(keyword, 500);
+  const debouncedLocation = useDebounce(location, 500);
   
   const { jobs, isLoading, error, pagination, changePage } = useJobs(
-    { keyword: debouncedKeyword || null, jobType },
+    { 
+      keyword: debouncedKeyword || null, 
+      jobType,
+      location: debouncedLocation || null 
+    },
     currentPage
   );
 
@@ -25,6 +31,7 @@ export default function JobsPage() {
     e.preventDefault();
     setKeyword('');
     setJobType(null);
+    setLocation('');
     setCurrentPage(1);
   };
 
@@ -77,6 +84,16 @@ export default function JobsPage() {
                         label: type.replace('_', ' ')
                       }))
                     ]}
+                  />
+                </div>
+                <div className="w-full sm:w-auto">
+                  <Input
+                    id="location"
+                    name="location"
+                    label="Location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Filter by location"
                   />
                 </div>
                 <div className="w-full sm:w-auto self-end">

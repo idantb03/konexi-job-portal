@@ -12,13 +12,14 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const keyword = searchParams.get('keyword');
     const jobType = searchParams.get('jobType') as JobTypes | null;
+    const location = searchParams.get('location');
     
     // Parse pagination parameters
     const page = parseInt(searchParams.get('page') || '1', 10);
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
     
     const result = await listAllJobsUseCase.execute(
-      { keyword, jobType },
+      { keyword, jobType, location },
       { page, pageSize }
     );
     
