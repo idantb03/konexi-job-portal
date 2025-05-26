@@ -8,18 +8,23 @@ import { Pagination } from '@/components/Pagination';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { Button } from '@/components/Button';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function JobsPage() {
-  const [location, setLocation] = useState<string>('');
+  const [keyword, setKeyword] = useState<string>('');
   const [jobType, setJobType] = useState<JobTypes | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const debouncedKeyword = useDebounce(keyword, 500);
+  
   const { jobs, isLoading, error, pagination, changePage } = useJobs(
-    { location: location || null, jobType },
+    { keyword: debouncedKeyword || null, jobType },
     currentPage
   );
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleClear = (e: React.FormEvent) => {
     e.preventDefault();
+    setKeyword('');
+    setJobType(null);
     setCurrentPage(1);
   };
 
@@ -47,15 +52,15 @@ export default function JobsPage() {
           <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
             <div className="px-4 py-5 sm:p-6">
               <h2 className="text-lg leading-6 font-medium text-gray-900 mb-4">Filter Jobs</h2>
-              <form onSubmit={handleSearch} className="flex flex-wrap gap-4">
+              <form onSubmit={handleClear} className="flex flex-wrap gap-4">
                 <div className="w-full sm:w-auto">
                   <Input
-                    id="location"
-                    name="location"
-                    label="Location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Any location"
+                    id="keyword"
+                    name="keyword"
+                    label="Search Jobs"
+                    value={keyword}
+                    onChange={(e) => setKeyword(e.target.value)}
+                    placeholder="Search by title, company, or description"
                   />
                 </div>
                 <div className="w-full sm:w-auto">
@@ -76,7 +81,7 @@ export default function JobsPage() {
                 </div>
                 <div className="w-full sm:w-auto self-end">
                   <Button type="submit">
-                    Search
+                    Clear
                   </Button>
                 </div>
               </form>

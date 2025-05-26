@@ -10,7 +10,7 @@ const listAllJobsUseCase = new ListAllJobs(jobRepository);
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const location = searchParams.get('location');
+    const keyword = searchParams.get('keyword');
     const jobType = searchParams.get('jobType') as JobTypes | null;
     
     // Parse pagination parameters
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
     
     const result = await listAllJobsUseCase.execute(
-      { location, jobType },
+      { keyword, jobType },
       { page, pageSize }
     );
     

@@ -59,8 +59,8 @@ export class JobRepository implements IJobRepository {
       .select('*', { count: 'exact' });
     
     // Apply filters if provided
-    if (filters?.location) {
-      query = query.ilike('location', `%${filters.location}%`);
+    if (filters?.keyword) {
+      query = query.or(`title.ilike.%${filters.keyword}%,company.ilike.%${filters.keyword}%,description.ilike.%${filters.keyword}%`);
     }
     
     if (filters?.jobType) {
