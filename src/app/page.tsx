@@ -114,7 +114,7 @@ export default function JobsPage() {
                 <ul className="divide-y divide-gray-200">
                   {jobs.map((job) => (
                     <li key={job.id} className="hover:bg-gray-50 transition-colors duration-150">
-                      <Link href={`/jobs/${job.id}`} className="block">
+                      <Link href={`/${job.id}`} className="block">
                         <div className="px-6 py-4 sm:px-8 flex items-center justify-between">
                           <h3 className="text-lg font-semibold text-indigo-600">{job.title}</h3>
                           <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
